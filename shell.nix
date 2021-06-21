@@ -16,7 +16,7 @@ pkgs.mkShell {
     # run-time dependencies
     alsaUtils
     coreutils
-    dnsutils
+    curl
     iproute
     wirelesstools
 
