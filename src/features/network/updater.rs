@@ -74,17 +74,36 @@ fn essid() -> Option<String> {
 }
 
 fn ip_address(address_type: &IpAddress) -> Option<String> {
-    let command = process::Command::new(
-        "curl",
-        &[ "--insecure", "https://ipinfo.io/ip" ]
-    );
+    let ip =
+        curl("https://ipinfo.io/ip")
+        .output()
+        .wrap_error(
+            FEATURE_NAME,
+            format!("ip address {} could not be fetched", address_type),
+        );
+    let city =
+        curl("https://ipinfo.io/city")
+        .output()
+        .wrap_error(
+            FEATURE_NAME,
+            format!("geoip {} could not be fetched", address_type),
+        );
 
-    let output = command.output().wrap_error(
-        FEATURE_NAME,
-        format!("ip address {} could not be fetched", address_type),
-    );
+    return merge_opts(normalize_output(ip), normalize_output(city));
+}
 
-    normalize_output(output)
+fn curl(url: &str) -> process::Command {
+    process::Command::new("curl", &[ "--insecure", url ])
+}
+
+fn merge_opts(first: Option<String>, second: Option<String>) -> Option<String> {
+    match first {
+        None => None,
+        Some(term1) => match second {
+            None => Some(term1),
+            Some(term2) => Some(format!("{} {}", term1, term2))
+        }
+    }
 }
 
 fn normalize_output(output: Result<String>) -> Option<String> {
