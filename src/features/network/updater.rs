@@ -81,12 +81,13 @@ fn ip_address(address_type: &IpAddress) -> Option<String> {
             // TODO: make asychronous
             "+time=3",  // default: 5 seconds
             "+tries=1", // default: 3
-            "@resolver1.opendns.com",
+            "TXT",
             match address_type {
-                IpAddress::V4 => "A",
-                IpAddress::V6 => "AAAA",
+                IpAddress::V4 => "-4",
+                IpAddress::V6 => "-6",
             },
-            "myip.opendns.com",
+            "@ns1.google.com",
+            "o-o.myaddr.l.google.com",
             "+short",
         ],
     );
@@ -96,7 +97,13 @@ fn ip_address(address_type: &IpAddress) -> Option<String> {
         format!("ip address {} could not be fetched", address_type),
     );
 
-    normalize_output(output)
+    // Google's myaddr service wraps ip in double quotes
+    let parsed = output.map(|result| {
+        let tokens = result.split('"').collect::<Vec<&str>>();
+        tokens[1].to_string()
+    });
+
+    normalize_output(parsed)
 }
 
 fn normalize_output(output: Result<String>) -> Option<String> {
