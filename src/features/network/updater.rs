@@ -103,7 +103,27 @@ fn ip_address(address_type: &IpAddress) -> Option<String> {
         tokens[1].to_string()
     });
 
-    normalize_output(parsed)
+    let with_city = parsed.map(|result| {
+        format!("{} {}", result, fetch_city(&result))
+    });
+
+    normalize_output(with_city)
+}
+
+fn fetch_city(ip_address: &String) -> String {
+    use std::process::Command; // using stdlib because wrapper requires raw strings
+
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg(format!("curl http://ip-api.com/line/{}", ip_address))
+        .output()
+        .expect("failed to execute geoip lookup");
+
+    let geoip = String::from_utf8(output.stdout).expect("UTF8 parsing failed");
+    let tokens = geoip.lines().collect::<Vec<&str>>();
+    let city_line = 5;
+
+    tokens[city_line].to_string()
 }
 
 fn normalize_output(output: Result<String>) -> Option<String> {
