@@ -68,16 +68,17 @@ mod tests {
     fn render_with_update() {
         let mut object = Data::new(RenderConfig {
             no_value: "--".to_owned(),
-            template: "{IPv4} {IPv6} {ESSID}".to_owned(),
+            template: "{IPv4} {IPv6} {ESSID} {CITY}".to_owned(),
         });
 
         object.update(
             "127.0.0.1".to_owned(),
             "fe::1".to_owned(),
             "WLAN".to_owned(),
+            "London".to_owned()
         );
 
-        assert_that!(object.render(), is(equal_to("127.0.0.1 fe::1 WLAN")));
+        assert_that!(object.render(), is(equal_to("127.0.0.1 fe::1 WLAN London")));
     }
 
     #[test]
@@ -87,7 +88,7 @@ mod tests {
             template: "{IPv4} // {ESSID}".to_owned(),
         });
 
-        object.update("127.0.0.1".to_owned(), "fe::1".to_owned(), None);
+        object.update("127.0.0.1".to_owned(), "fe::1".to_owned(), None, None);
 
         assert_that!(object.render(), is(equal_to("127.0.0.1 // #")));
     }
@@ -96,11 +97,11 @@ mod tests {
     fn render_with_update_and_none_values() {
         let mut object = Data::new(RenderConfig {
             no_value: "--".to_owned(),
-            template: "{IPv4} {IPv6} {ESSID}".to_owned(),
+            template: "{IPv4} {IPv6} {ESSID} {CITY}".to_owned(),
         });
 
-        object.update(None, None, None);
+        object.update(None, None, None, None);
 
-        assert_that!(object.render(), is(equal_to("-- -- --")));
+        assert_that!(object.render(), is(equal_to("-- -- -- --")));
     }
 }
