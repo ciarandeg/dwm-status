@@ -115,15 +115,12 @@ fn fetch_city(ip_address: &String) -> String {
 
     let output = Command::new("sh")
         .arg("-c")
-        .arg(format!("curl http://ip-api.com/line/{}", ip_address))
+        .arg(format!("curl http://ip-api.com/line/{}?fields=city", ip_address))
         .output()
         .expect("failed to execute geoip lookup");
 
     let geoip = String::from_utf8(output.stdout).expect("UTF8 parsing failed");
-    let tokens = geoip.lines().collect::<Vec<&str>>();
-    let city_line = 5;
-
-    tokens[city_line].to_string()
+    geoip.split_whitespace().next().unwrap().to_string()
 }
 
 fn normalize_output(output: Result<String>) -> Option<String> {
