@@ -4,6 +4,7 @@ use super::RenderConfig;
 use super::PLACEHOLDER_ESSID;
 use super::PLACEHOLDER_IPV4;
 use super::PLACEHOLDER_IPV6;
+use super::PLACEHOLDER_CITY;
 
 #[derive(Debug)]
 pub(super) struct Data {
@@ -19,18 +20,20 @@ impl Data {
         }
     }
 
-    pub(super) fn update<T4, T6, E>(&mut self, ipv4: T4, ipv6: T6, essid: E)
+    pub(super) fn update<T4, T6, E, C>(&mut self, ipv4: T4, ipv6: T6, essid: E, city: C)
     where
         T4: Into<Option<String>>,
         T6: Into<Option<String>>,
         E: Into<Option<String>>,
+        C: Into<Option<String>>,
     {
         self.cache = self
             .config
             .template
             .replace(PLACEHOLDER_IPV4, &self.get_value(ipv4))
             .replace(PLACEHOLDER_IPV6, &self.get_value(ipv6))
-            .replace(PLACEHOLDER_ESSID, &self.get_value(essid));
+            .replace(PLACEHOLDER_ESSID, &self.get_value(essid))
+            .replace(PLACEHOLDER_CITY, &self.get_value(city));
     }
 
     fn get_value<T: Into<Option<String>>>(&self, value: T) -> String {

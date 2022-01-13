@@ -9,6 +9,7 @@ use super::FEATURE_NAME;
 use super::PLACEHOLDER_ESSID;
 use super::PLACEHOLDER_IPV4;
 use super::PLACEHOLDER_IPV6;
+use super::PLACEHOLDER_CITY;
 
 #[derive(Clone, Debug, Deserialize)]
 pub(crate) struct RenderConfig {
@@ -21,6 +22,7 @@ pub(super) struct UpdateConfig {
     pub(super) show_essid: bool,
     pub(super) show_ipv4: bool,
     pub(super) show_ipv6: bool,
+    pub(super) show_city: bool,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -37,7 +39,7 @@ impl ConfigType for ConfigEntry {
             FEATURE_NAME,
             map!(
                 "no_value" => "NA",
-                "template" => "{IPv4} · {IPv6} · {ESSID}",
+                "template" => "{IPv4} · {IPv6} · {CITY} · {ESSID}",
             ),
         )
     }
@@ -48,6 +50,7 @@ impl ConfigType for ConfigEntry {
         set_update_config(config, &template, PLACEHOLDER_ESSID, "essid")?;
         set_update_config(config, &template, PLACEHOLDER_IPV4, "ipv4")?;
         set_update_config(config, &template, PLACEHOLDER_IPV6, "ipv6")?;
+        set_update_config(config, &template, PLACEHOLDER_CITY, "city")?;
 
         Ok(())
     }

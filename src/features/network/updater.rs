@@ -57,8 +57,9 @@ impl feature::Updatable for Updater {
         let ipv4 = self.get_if_enabled(self.config.show_ipv4, || ip_address(&IpAddress::V4));
         let ipv6 = self.get_if_enabled(self.config.show_ipv6, || ip_address(&IpAddress::V6));
         let essid = self.get_if_enabled(self.config.show_essid, essid);
+        let city = self.get_if_enabled(self.config.show_city, city);
 
-        self.data.update(ipv4, ipv6, essid);
+        self.data.update(ipv4, ipv6, essid, city);
 
         Ok(())
     }
@@ -71,6 +72,19 @@ fn essid() -> Option<String> {
         .wrap_error(FEATURE_NAME, "essid {} could not be fetched");
 
     normalize_output(output)
+}
+
+fn city() -> Option<String> {
+    use std::process::Command; // using stdlib because wrapper requires raw strings
+
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg(format!("curl http://ip-api.com/line/{}?fields=city", ip_address(&IpAddress::V4).unwrap()))
+        .output()
+        .expect("failed to execute geoip lookup");
+
+    let geoip = String::from_utf8(output.stdout).expect("UTF8 parsing failed");
+    geoip.split_whitespace().next().map(|raw| { raw.to_string() })
 }
 
 fn ip_address(address_type: &IpAddress) -> Option<String> {
@@ -102,25 +116,7 @@ fn ip_address(address_type: &IpAddress) -> Option<String> {
         let tokens = result.split('"').collect::<Vec<&str>>();
         tokens[1].to_string()
     });
-
-    let with_city = parsed.map(|result| {
-        format!("{} {}", result, fetch_city(&result))
-    });
-
-    normalize_output(with_city)
-}
-
-fn fetch_city(ip_address: &String) -> String {
-    use std::process::Command; // using stdlib because wrapper requires raw strings
-
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg(format!("curl http://ip-api.com/line/{}?fields=city", ip_address))
-        .output()
-        .expect("failed to execute geoip lookup");
-
-    let geoip = String::from_utf8(output.stdout).expect("UTF8 parsing failed");
-    geoip.split_whitespace().next().unwrap().to_string()
+    normalize_output(parsed)
 }
 
 fn normalize_output(output: Result<String>) -> Option<String> {
