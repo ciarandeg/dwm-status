@@ -77,9 +77,14 @@ fn essid() -> Option<String> {
 fn city() -> Option<String> {
     use std::process::Command; // using stdlib because wrapper requires raw strings
 
+    let ip_address = match ip_address(&IpAddress::V4) {
+        Some(string) => string,
+        None => return None
+    };
+
     let output = Command::new("sh")
         .arg("-c")
-        .arg(format!("curl http://ip-api.com/line/{}?fields=city", ip_address(&IpAddress::V4).unwrap()))
+        .arg(format!("curl http://ip-api.com/line/{}?fields=city", ip_address))
         .output()
         .expect("failed to execute geoip lookup");
 
