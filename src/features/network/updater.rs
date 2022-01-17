@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt;
 
 use log::info;
@@ -32,11 +33,12 @@ impl fmt::Display for IpAddress {
 pub(super) struct Updater {
     data: Data,
     config: UpdateConfig,
+    city_cache: HashMap<String, String>
 }
 
 impl Updater {
-    pub(super) const fn new(data: Data, config: UpdateConfig) -> Self {
-        Self { data, config }
+    pub(super) fn new(data: Data, config: UpdateConfig) -> Self {
+        Self { data, config, city_cache: HashMap::new() }
     }
 
     fn get_if_enabled<F: Fn() -> Option<String>>(
@@ -57,7 +59,27 @@ impl feature::Updatable for Updater {
         let ipv4 = self.get_if_enabled(self.config.show_ipv4, || ip_address(&IpAddress::V4));
         let ipv6 = self.get_if_enabled(self.config.show_ipv6, || ip_address(&IpAddress::V6));
         let essid = self.get_if_enabled(self.config.show_essid, essid);
-        let city = self.get_if_enabled(self.config.show_city, city);
+        let city = {
+            let ip_if_any = ipv4.as_ref().or(ipv6.as_ref());
+            let city = match ip_if_any {
+                Some(ip) => self.get_if_enabled(self.config.show_city, | | {
+                    match self.city_cache.get(ip) {
+                        Some(city) => Some(city.clone()),
+                        None => city()
+                    }
+                } ),
+                None => None
+            };
+            if let Some(ip) = ip_if_any {
+                if let Some(city) = &city {
+                    if !self.city_cache.contains_key(ip) {
+                        info!("Network: Cached city info for {}", ip);
+                        self.city_cache.insert(ip.clone(), city.clone());
+                    }
+                }
+            }
+            city
+        };
 
         self.data.update(ipv4, ipv6, essid, city);
 
@@ -76,6 +98,8 @@ fn essid() -> Option<String> {
 
 fn city() -> Option<String> {
     use std::process::Command; // using stdlib because wrapper requires raw strings
+
+    info!("Network: Grabbing geoip info from external API");
 
     let ip_address = match ip_address(&IpAddress::V4) {
         Some(string) => string,
