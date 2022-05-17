@@ -6,8 +6,8 @@ license = "MIT"
 name = "dwm-status"
 readme = "README.md"
 repository = "https://github.com/Gerschtli/dwm-status"
-version = "1.7.2"
-edition = "2018"
+version = "1.7.3"
+edition = "2021"
 [badges.travis-ci]
 branch = "master"
 repository = "Gerschtli/dwm-status"
@@ -15,20 +15,20 @@ repository = "Gerschtli/dwm-status"
 [dependencies]
 battery = "0.7.8"
 chrono = "0.4.19"
-clap = "2.33.3"
+clap = { version = "3.1.12", features = [ "cargo" ] }
 config = "0.11.0"
 dbus = "0.8.4"
-inotify = "0.9.2"
+inotify = "0.10.0"
 libnotify = "1.0.3"
-log = "0.4.14"
-serde = "1.0.125"
-serde_derive = "1.0.125"
-simplelog = "0.10.0"
+log = "0.4.16"
+serde = "1.0.136"
+serde_derive = "1.0.136"
+simplelog = "0.12.0"
 uom = { version = "0.30.0", features = ["autoconvert", "f32", "si"] }
 
 [dependencies.ctrlc]
 features = ["termination"]
-version = "3.1.9"
+version = "3.2.2"
 
 [dependencies.mocktopus]
 optional = true
@@ -36,7 +36,7 @@ version = "0.7.11"
 
 [dependencies.x11]
 features = ["xlib"]
-version = "2.18.2"
+version = "2.19.1"
 
 [dev-dependencies]
 hamcrest2 = "0.3.0"
